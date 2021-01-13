@@ -1,3 +1,6 @@
+# VS Code
+.vscode
+
 # Auto generated files
 build/*
 *.slo

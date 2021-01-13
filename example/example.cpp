@@ -203,7 +203,8 @@ void stopwatch_example()
     std::this_thread::sleep_for(std::chrono::milliseconds(123));
     spdlog::info("Stopwatch: {} seconds", sw);
 }
-
+#include "spdlog/sinks/tcp_sink.h"
+#include "spdlog/sinks/udp_sink.h"
 // A logger with multiple sinks (stdout and file) - each with a different format and log level.
 void multi_sink_example()
 {
@@ -211,10 +212,21 @@ void multi_sink_example()
     console_sink->set_level(spdlog::level::warn);
     console_sink->set_pattern("[multi_sink_example] [%^%l%$] %v");
 
+    spdlog::sinks::tcp_sink_config cfg{"127.0.0.1", 60001};
+    cfg.lazy_connect = true;
+    auto tcp_sink = std::make_shared<spdlog::sinks::tcp_sink_st>(cfg);
+    tcp_sink->set_level(spdlog::level::warn);
+    tcp_sink->set_pattern("[multi_sink_example] [%^%l%$] %v");
+
+    spdlog::sinks::udp_sink_config cfg1{"127.0.0.1", 60002};
+    auto udp_sink = std::make_shared<spdlog::sinks::udp_sink_st>(cfg1);
+    udp_sink->set_level(spdlog::level::warn);
+    udp_sink->set_pattern("[multi_sink_example] [%^%l%$] %v");
+
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/multisink.txt", true);
     file_sink->set_level(spdlog::level::trace);
 
-    spdlog::logger logger("multi_sink", {console_sink, file_sink});
+    spdlog::logger logger("multi_sink", {console_sink, file_sink, udp_sink, tcp_sink});
     logger.set_level(spdlog::level::debug);
     logger.warn("this should appear in both console and file");
     logger.info("this message should not appear in the console, only in the file");
