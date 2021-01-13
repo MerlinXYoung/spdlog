@@ -29,6 +29,8 @@ int main(int, char *[])
     // Log levels can be loaded from argv/env using "SPDLOG_LEVEL"
     load_levels_example();
 
+    spdlog::pinfo("Easy padding in number link %d", 18);
+
     spdlog::info("Welcome to spdlog version {}.{}.{}  !", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 
     spdlog::warn("Easy padding in numbers like {:08d}", 12);

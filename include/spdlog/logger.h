@@ -17,6 +17,7 @@
 #include <spdlog/common.h>
 #include <spdlog/details/log_msg.h>
 #include <spdlog/details/backtracer.h>
+#include <spdlog/fmt/bundled/printf.h>
 
 #ifdef SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #include <spdlog/details/os.h>
@@ -128,6 +129,65 @@ public:
     {
         log(level::critical, fmt, std::forward<Args>(args)...);
     }
+
+
+    // FormatString is a type derived from fmt::compile_string
+    template<typename FormatString, typename std::enable_if<fmt::is_compile_string<FormatString>::value, int>::type = 0, typename... Args>
+    void print(source_loc loc, level::level_enum lvl, const FormatString &fmt, Args&&...args)
+    {
+        print_(loc, lvl, fmt, std::forward<Args>(args)...);
+    }
+
+    // FormatString is NOT a type derived from fmt::compile_string but is a string_view_t or can be implicitly converted to one
+    template<typename... Args>
+    void print(source_loc loc, level::level_enum lvl, string_view_t fmt, Args&&...args)
+    {
+        print_(loc, lvl, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void print(level::level_enum lvl, const FormatString &fmt, Args&&...args)
+    {
+        print(source_loc{}, lvl, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void ptrace(const FormatString &fmt, Args&&...args)
+    {
+        print(level::trace, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void pdebug(const FormatString &fmt, Args&&...args)
+    {
+        print(level::debug, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void pinfo(const FormatString &fmt, Args&&...args)
+    {
+        print(level::info, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void pwarn(const FormatString &fmt, Args&&...args)
+    {
+        print(level::warn, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void perror(const FormatString &fmt, Args&&...args)
+    {
+        print(level::err, fmt, std::forward<Args>(args)...);
+    }
+
+    template<typename FormatString, typename... Args>
+    void pcritical(const FormatString &fmt, Args&&...args)
+    {
+        print(level::critical, fmt, std::forward<Args>(args)...);
+    }
+
+
 
     template<typename T>
     void log(level::level_enum lvl, const T &msg)
@@ -338,6 +398,26 @@ protected:
         {
             memory_buf_t buf;
             fmt::format_to(buf, fmt, std::forward<Args>(args)...);
+            details::log_msg log_msg(loc, name_, lvl, string_view_t(buf.data(), buf.size()));
+            log_it_(log_msg, log_enabled, traceback_enabled);
+        }
+        SPDLOG_LOGGER_CATCH()
+    }
+
+    template<typename FormatString, typename... Args>
+    void print_(source_loc loc, level::level_enum lvl, const FormatString &fmt, Args&&...args)
+    {
+        bool log_enabled = should_log(lvl);
+        bool traceback_enabled = tracer_.enabled();
+        if (!log_enabled && !traceback_enabled)
+        {
+            return;
+        }
+        SPDLOG_TRY
+        {
+            // memory_buf_t buf;
+            // fmt::format_to(buf, fmt, std::forward<Args>(args)...);
+            auto buf = fmt::sprintf(fmt, std::forward<Args>(args)...);
             details::log_msg log_msg(loc, name_, lvl, string_view_t(buf.data(), buf.size()));
             log_it_(log_msg, log_enabled, traceback_enabled);
         }

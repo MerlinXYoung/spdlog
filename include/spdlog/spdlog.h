@@ -175,6 +175,59 @@ inline void critical(const FormatString &fmt, Args&&...args)
     default_logger_raw()->critical(fmt, std::forward<Args>(args)...);
 }
 
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+template<typename FormatString, typename... Args>
+inline void plog(source_loc source, level::level_enum lvl, const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->print(source, lvl, fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void plog(level::level_enum lvl, const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->print(source_loc{}, lvl, fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void ptrace(const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->ptrace(fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void pdebug(const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->pdebug(fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void pinfo(const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->pinfo(fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void pwarn(const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->pwarn(fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void perror(const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->perror(fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void pcritical(const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->pcritical(fmt, std::forward<Args>(args)...);
+}
+//========================================================
+
+
+
 template<typename T>
 inline void log(source_loc source, level::level_enum lvl, const T &msg)
 {
