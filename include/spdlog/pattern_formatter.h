@@ -30,14 +30,14 @@ struct padding_info
     };
 
     padding_info() = default;
-    padding_info(size_t width, padding_info::pad_side side, bool truncate)
+    padding_info(size_t width, padding_info::pad_side side, bool truncate) SPDLOG_NOEXCEPT
         : width_(width)
         , side_(side)
         , truncate_(truncate)
         , enabled_(true)
     {}
 
-    bool enabled() const
+    inline bool enabled() const SPDLOG_NOEXCEPT
     {
         return enabled_;
     }
@@ -50,7 +50,7 @@ struct padding_info
 class SPDLOG_API flag_formatter
 {
 public:
-    explicit flag_formatter(padding_info padinfo)
+    explicit flag_formatter(padding_info padinfo) SPDLOG_NOEXCEPT
         : padinfo_(padinfo)
     {}
     flag_formatter() = default;
@@ -68,7 +68,7 @@ class SPDLOG_API custom_flag_formatter : public details::flag_formatter
 public:
     virtual std::unique_ptr<custom_flag_formatter> clone() const = 0;
 
-    void set_padding_info(details::padding_info padding)
+    inline void set_padding_info(details::padding_info padding) SPDLOG_NOEXCEPT
     {
         flag_formatter::padinfo_ = padding;
     }

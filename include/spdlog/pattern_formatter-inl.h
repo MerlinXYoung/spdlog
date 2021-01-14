@@ -62,7 +62,7 @@ public:
     }
 
     template<typename T>
-    static unsigned int count_digits(T n)
+    inline static unsigned int count_digits(T n)
     {
         return fmt_helper::count_digits(n);
     }
@@ -83,7 +83,7 @@ public:
 private:
     void pad_it(long count)
     {
-        fmt_helper::append_string_view(string_view_t(spaces_.data(), static_cast<size_t>(count)), dest_);
+        fmt_helper::append_string_view(string_view_t(spaces_.data(), static_cast<size_t>(count>spaces_.size()?spaces_.size():count)), dest_);
     }
 
     const padding_info &padinfo_;
@@ -94,10 +94,10 @@ private:
 
 struct null_scoped_padder
 {
-    null_scoped_padder(size_t /*wrapped_size*/, const padding_info & /*padinfo*/, memory_buf_t & /*dest*/) {}
+    inline null_scoped_padder(size_t /*wrapped_size*/, const padding_info & /*padinfo*/, memory_buf_t & /*dest*/) {}
 
     template<typename T>
-    static unsigned int count_digits(T /* number */)
+    inline static unsigned int count_digits(T /* number */)
     {
         return 0;
     }
@@ -167,7 +167,7 @@ static int to12h(const tm &t)
 }
 
 // Abbreviated weekday name
-static std::array<const char *, 7> days{{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}};
+static constexpr std::array<const char *, 7> days{{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}};
 
 template<typename ScopedPadder>
 class a_formatter final : public flag_formatter
@@ -186,7 +186,7 @@ public:
 };
 
 // Full weekday name
-static std::array<const char *, 7> full_days{{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}};
+static constexpr std::array<const char *, 7> full_days{{"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}};
 
 template<typename ScopedPadder>
 class A_formatter : public flag_formatter
@@ -205,7 +205,7 @@ public:
 };
 
 // Abbreviated month
-static const std::array<const char *, 12> months{{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"}};
+static constexpr std::array<const char *, 12> months{{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"}};
 
 template<typename ScopedPadder>
 class b_formatter final : public flag_formatter
@@ -224,7 +224,7 @@ public:
 };
 
 // Full month name
-static const std::array<const char *, 12> full_months{
+static constexpr std::array<const char *, 12> full_months{
     {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}};
 
 template<typename ScopedPadder>
@@ -1296,7 +1296,7 @@ SPDLOG_INLINE void pattern_formatter::handle_flag_(char flag, details::padding_i
 SPDLOG_INLINE details::padding_info pattern_formatter::handle_padspec_(std::string::const_iterator &it, std::string::const_iterator end)
 {
     using details::padding_info;
-    using details::scoped_padder;
+    // using details::scoped_padder;
     const size_t max_width = 64;
     if (it == end)
     {
