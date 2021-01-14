@@ -49,10 +49,7 @@ public:
     explicit udp_sink(udp_sink_config sink_config)
         : config_{std::move(sink_config)}
     {
-        // if (!config_.lazy_connect)
-        // {
-            this->client_.connect(config_.server_host, config_.server_port);
-        // }
+        this->client_.connect(config_.server_host, config_.server_port);
     }
 
     ~udp_sink() = default;
@@ -62,10 +59,7 @@ protected:
     {
         spdlog::memory_buf_t formatted;
         spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
-        // if (!client_.is_connected())
-        // {
-        //     client_.connect(config_.server_host, config_.server_port);
-        // }
+
         client_.send(formatted.data(), formatted.size());
     }
 

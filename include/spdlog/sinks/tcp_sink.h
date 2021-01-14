@@ -14,8 +14,9 @@
 
 #include <mutex>
 #include <string>
-#include <chrono>
-#include <functional>
+// #include <chrono>
+// #include <functional>
+#include <list>
 
 #pragma once
 
@@ -32,6 +33,8 @@ struct tcp_sink_config
     std::string server_host;
     int server_port;
     bool lazy_connect = false; // if true connect on first log call instead of on construction
+    bool force_flush_ = false;
+    unsigned short buffers_size_ = 64;
 
     tcp_sink_config(std::string host, int port)
         : server_host{std::move(host)}
@@ -62,16 +65,67 @@ protected:
     {
         spdlog::memory_buf_t formatted;
         spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
-        if (!client_.is_connected())
-        {
-            client_.connect(config_.server_host, config_.server_port);
+        if(config_.force_flush_){
+            if (!client_.is_connected())
+            {
+                connect();
+            }
+            send(formatted);
+        }else{
+            buffers_.emplace_back(std::move(formatted));
         }
-        client_.send(formatted.data(), formatted.size());
     }
 
-    void flush_() override {}
+    void flush_() override {
+        if (!client_.is_connected())
+        {
+            connect();
+        }
+        while(!buffers_.empty() && client_.is_connected()){
+            send();
+        }
+    }
+
+    inline void connect(){ 
+        try{
+            if (!client_.is_connected())
+            {
+                client_.connect(config_.server_host, config_.server_port);
+            }
+        }catch(std::exception& e){
+
+        }catch(...){ 
+
+        }
+    }
+    inline void send(spdlog::memory_buf_t& formatted){ 
+        if (client_.is_connected()){
+            try{
+                client_.send(formatted.data(), formatted.size());
+            }catch(std::exception& e){
+            }catch(...){ 
+            }
+        }else{
+            if(buffers_.size() < config_.buffers_size_)
+                buffers_.push_back(std::move(formatted));
+            else{
+                auto msg = fmt::format("tcp_sink buffers({}) full", buffers_.size());
+                throw_spdlog_ex(msg);
+            }
+        }
+    }
+    inline void send(){ 
+        try{
+            auto&  formatted = buffers_.front();
+            client_.send(formatted.data(), formatted.size());
+            buffers_.pop_front();
+        }catch(std::exception& e){
+        }catch(...){ 
+        }
+    }
     tcp_sink_config config_;
     details::tcp_client client_;
+    std::list<spdlog::memory_buf_t> buffers_;
 };
 
 using tcp_sink_mt = tcp_sink<std::mutex>;
