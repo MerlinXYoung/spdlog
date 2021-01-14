@@ -11,9 +11,9 @@ namespace spdlog {
 namespace details {
 struct null_mutex
 {
-    void lock() const {}
-    void unlock() const {}
-    bool try_lock() const
+    inline void lock() const {}
+    inline void unlock() const {}
+    inline bool try_lock() const
     {
         return true;
     }
@@ -28,17 +28,17 @@ struct null_atomic_int
         : value(new_value)
     {}
 
-    int load(std::memory_order = std::memory_order_relaxed) const
+    inline int load(std::memory_order = std::memory_order_relaxed) const
     {
         return value;
     }
 
-    void store(int new_value, std::memory_order = std::memory_order_relaxed)
+    inline void store(int new_value, std::memory_order = std::memory_order_relaxed)
     {
         value = new_value;
     }
 
-    int exchange(int new_value, std::memory_order = std::memory_order_relaxed)
+    inline int exchange(int new_value, std::memory_order = std::memory_order_relaxed)
     {
         std::swap(new_value, value);
         return new_value; // return value before the call

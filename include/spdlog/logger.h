@@ -331,22 +331,31 @@ public:
 #endif // SPDLOG_WCHAR_TO_UTF8_SUPPORT
 
     // return true logging is enabled for the given level.
-    bool should_log(level::level_enum msg_level) const
+    inline bool should_log(level::level_enum msg_level) const
     {
         return msg_level >= level_.load(std::memory_order_relaxed);
     }
 
     // return true if backtrace logging is enabled.
-    bool should_backtrace() const
+    inline bool should_backtrace() const
     {
         return tracer_.enabled();
     }
 
-    void set_level(level::level_enum log_level);
+    inline void set_level(level::level_enum log_level)
+    {
+        level_.store(log_level);
+    }
 
-    level::level_enum level() const;
+    inline level::level_enum level() const
+    {
+        return static_cast<level::level_enum>(level_.load(std::memory_order_relaxed));
+    }
 
-    const std::string &name() const;
+    inline const std::string &name() const noexcept
+    {
+        return name_;
+    }
 
     // set formatting for the sinks in this logger.
     // each sink will get a separate instance of the formatter object.

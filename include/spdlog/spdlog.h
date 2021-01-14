@@ -140,6 +140,18 @@ inline void log(level::level_enum lvl, const FormatString &fmt, Args&&...args)
 }
 
 template<typename FormatString, typename... Args>
+inline void print(source_loc source, level::level_enum lvl, const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->print(source, lvl, fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
+inline void print(level::level_enum lvl, const FormatString &fmt, Args&&...args)
+{
+    default_logger_raw()->print(source_loc{}, lvl, fmt, std::forward<Args>(args)...);
+}
+
+template<typename FormatString, typename... Args>
 inline void trace(const FormatString &fmt, Args&&...args)
 {
     default_logger_raw()->trace(fmt, std::forward<Args>(args)...);

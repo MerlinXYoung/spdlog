@@ -64,21 +64,6 @@ SPDLOG_INLINE void swap(logger &a, logger &b)
     a.swap(b);
 }
 
-SPDLOG_INLINE void logger::set_level(level::level_enum log_level)
-{
-    level_.store(log_level);
-}
-
-SPDLOG_INLINE level::level_enum logger::level() const
-{
-    return static_cast<level::level_enum>(level_.load(std::memory_order_relaxed));
-}
-
-SPDLOG_INLINE const std::string &logger::name() const
-{
-    return name_;
-}
-
 // set formatting for the sinks in this logger.
 // each sink will get a separate instance of the formatter object.
 SPDLOG_INLINE void logger::set_formatter(std::unique_ptr<formatter> f)
