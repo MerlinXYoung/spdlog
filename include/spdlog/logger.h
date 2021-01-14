@@ -403,7 +403,7 @@ protected:
     }
 
     template<typename FormatString, typename... Args>
-    void print_(source_loc loc, level::level_enum lvl, const FormatString &fmt, Args&&...args)
+    void print_(source_loc loc, level::level_enum lvl, const FormatString &format, Args&&...args)
     {
         bool log_enabled = should_log(lvl);
         bool traceback_enabled = tracer_.enabled();
@@ -413,9 +413,10 @@ protected:
         }
         SPDLOG_TRY
         {
-            // memory_buf_t buf;
-            // fmt::format_to(buf, fmt, std::forward<Args>(args)...);
-            auto buf = fmt::sprintf(fmt, std::forward<Args>(args)...);
+            memory_buf_t buf;
+            using context = fmt::printf_context;
+            // fmt::detail::vprintf<char, context>(buf, fmt::detail::to_string_view(format), fmt::make_format_args<context>(std::forward<Args>(args)...));
+            fmt::detail::vprintf<char, context>(buf, format, fmt::make_format_args<context>(std::forward<Args>(args)...));
             details::log_msg log_msg(loc, name_, lvl, string_view_t(buf.data(), buf.size()));
             log_it_(log_msg, log_enabled, traceback_enabled);
         }
